@@ -1,0 +1,43 @@
+{
+    "accuracy": 0.863481228668942,
+    "f1_score_weighted": 0.8633340406058699,
+    "classification_report": {
+        "Benign": {
+            "precision": 0.9997725204731575,
+            "recall": 1.0,
+            "f1-score": 0.9998862472983734,
+            "support": 4395.0
+        },
+        "Ransomware": {
+            "precision": 0.7119603680113235,
+            "recall": 0.6848196051735874,
+            "f1-score": 0.6981263011797363,
+            "support": 1469.0
+        },
+        "Spyware": {
+            "precision": 0.7660130718954249,
+            "recall": 0.7797737857618097,
+            "f1-score": 0.7728321793603693,
+            "support": 1503.0
+        },
+        "Trojan": {
+            "precision": 0.7008959338387319,
+            "recall": 0.7146872803935348,
+            "f1-score": 0.7077244258872651,
+            "support": 1423.0
+        },
+        "accuracy": 0.863481228668942,
+        "macro avg": {
+            "precision": 0.7946604735546594,
+            "recall": 0.7948201678322329,
+            "f1-score": 0.794642288431436,
+            "support": 8790.0
+        },
+        "weighted avg": {
+            "precision": 0.8633176984072242,
+            "recall": 0.863481228668942,
+            "f1-score": 0.8633340406058699,
+            "support": 8790.0
+        }
+    }
+}

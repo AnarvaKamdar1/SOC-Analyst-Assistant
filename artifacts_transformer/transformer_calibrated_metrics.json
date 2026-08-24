@@ -1,0 +1,8 @@
+{
+    "accuracy": 0.9810088119112732,
+    "f1_score_weighted": 0.9798846397387379,
+    "f1_score_per_class": {
+        "Goodware/Benign": 0.5674740484429066,
+        "Malware": 0.9902912621359223
+    }
+}
