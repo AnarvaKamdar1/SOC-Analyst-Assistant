@@ -1,0 +1,73 @@
+{
+    "img_size": [
+        128,
+        128
+    ],
+    "batch_size": 32,
+    "norm_mean": [
+        0.485,
+        0.456,
+        0.406
+    ],
+    "norm_std": [
+        0.229,
+        0.224,
+        0.225
+    ],
+    "classes": [
+        "Adposhel",
+        "Agent",
+        "Allaple",
+        "Amonetize",
+        "Androm",
+        "Autorun",
+        "BrowseFox",
+        "Dinwod",
+        "Elex",
+        "Expiro",
+        "Fasong",
+        "HackKMS",
+        "Hlux",
+        "Injector",
+        "InstallCore",
+        "MultiPlug",
+        "Neoreklami",
+        "Neshta",
+        "Other",
+        "Regrun",
+        "Sality",
+        "Snarasite",
+        "Stantinko",
+        "VBA",
+        "VBKrypt",
+        "Vilsel"
+    ],
+    "label_mapping": {
+        "0": "Adposhel",
+        "1": "Agent",
+        "2": "Allaple",
+        "3": "Amonetize",
+        "4": "Androm",
+        "5": "Autorun",
+        "6": "BrowseFox",
+        "7": "Dinwod",
+        "8": "Elex",
+        "9": "Expiro",
+        "10": "Fasong",
+        "11": "HackKMS",
+        "12": "Hlux",
+        "13": "Injector",
+        "14": "InstallCore",
+        "15": "MultiPlug",
+        "16": "Neoreklami",
+        "17": "Neshta",
+        "18": "Other",
+        "19": "Regrun",
+        "20": "Sality",
+        "21": "Snarasite",
+        "22": "Stantinko",
+        "23": "VBA",
+        "24": "VBKrypt",
+        "25": "Vilsel"
+    }
+}

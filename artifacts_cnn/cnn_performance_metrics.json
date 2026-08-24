@@ -1,0 +1,175 @@
+{
+    "accuracy": 0.943767572633552,
+    "f1_score_weighted": 0.9435300902800774,
+    "classification_report": {
+        "Adposhel": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 74.0
+        },
+        "Agent": {
+            "precision": 0.9206349206349206,
+            "recall": 0.8285714285714286,
+            "f1-score": 0.8721804511278195,
+            "support": 70.0
+        },
+        "Allaple": {
+            "precision": 0.9714285714285714,
+            "recall": 0.9577464788732394,
+            "f1-score": 0.9645390070921985,
+            "support": 71.0
+        },
+        "Amonetize": {
+            "precision": 1.0,
+            "recall": 0.9733333333333334,
+            "f1-score": 0.9864864864864865,
+            "support": 75.0
+        },
+        "Androm": {
+            "precision": 0.8933333333333333,
+            "recall": 0.8933333333333333,
+            "f1-score": 0.8933333333333333,
+            "support": 75.0
+        },
+        "Autorun": {
+            "precision": 0.9705882352941176,
+            "recall": 0.88,
+            "f1-score": 0.9230769230769231,
+            "support": 75.0
+        },
+        "BrowseFox": {
+            "precision": 0.9230769230769231,
+            "recall": 0.972972972972973,
+            "f1-score": 0.9473684210526315,
+            "support": 74.0
+        },
+        "Dinwod": {
+            "precision": 0.961038961038961,
+            "recall": 0.9866666666666667,
+            "f1-score": 0.9736842105263158,
+            "support": 75.0
+        },
+        "Elex": {
+            "precision": 0.9859154929577465,
+            "recall": 0.9333333333333333,
+            "f1-score": 0.958904109589041,
+            "support": 75.0
+        },
+        "Expiro": {
+            "precision": 0.8641975308641975,
+            "recall": 0.9333333333333333,
+            "f1-score": 0.8974358974358975,
+            "support": 75.0
+        },
+        "Fasong": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 75.0
+        },
+        "HackKMS": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 75.0
+        },
+        "Hlux": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 75.0
+        },
+        "Injector": {
+            "precision": 0.9193548387096774,
+            "recall": 0.7702702702702703,
+            "f1-score": 0.8382352941176471,
+            "support": 74.0
+        },
+        "InstallCore": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 75.0
+        },
+        "MultiPlug": {
+            "precision": 0.9722222222222222,
+            "recall": 0.9333333333333333,
+            "f1-score": 0.9523809523809523,
+            "support": 75.0
+        },
+        "Neoreklami": {
+            "precision": 1.0,
+            "recall": 0.9866666666666667,
+            "f1-score": 0.9932885906040269,
+            "support": 75.0
+        },
+        "Neshta": {
+            "precision": 0.8857142857142857,
+            "recall": 0.8266666666666667,
+            "f1-score": 0.8551724137931035,
+            "support": 75.0
+        },
+        "Other": {
+            "precision": 0.8448844884488449,
+            "recall": 0.9309090909090909,
+            "f1-score": 0.8858131487889274,
+            "support": 275.0
+        },
+        "Regrun": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 72.0
+        },
+        "Sality": {
+            "precision": 0.8428571428571429,
+            "recall": 0.7866666666666666,
+            "f1-score": 0.8137931034482758,
+            "support": 75.0
+        },
+        "Snarasite": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 75.0
+        },
+        "Stantinko": {
+            "precision": 0.974025974025974,
+            "recall": 1.0,
+            "f1-score": 0.9868421052631579,
+            "support": 75.0
+        },
+        "VBA": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 75.0
+        },
+        "VBKrypt": {
+            "precision": 0.9125,
+            "recall": 0.9733333333333334,
+            "f1-score": 0.9419354838709677,
+            "support": 75.0
+        },
+        "Vilsel": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 74.0
+        },
+        "accuracy": 0.943767572633552,
+        "macro avg": {
+            "precision": 0.9554528046387277,
+            "recall": 0.9448898810870641,
+            "f1-score": 0.9494026896918347,
+            "support": 2134.0
+        },
+        "weighted avg": {
+            "precision": 0.9450696092242795,
+            "recall": 0.943767572633552,
+            "f1-score": 0.9435300902800774,
+            "support": 2134.0
+        }
+    }
+}
