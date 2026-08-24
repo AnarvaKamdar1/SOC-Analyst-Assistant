@@ -1,0 +1,29 @@
+Datasets-
+
+sohamkumar1703/malevis-dataset/malevis_train_val_300x300
+bertvankeulen/cic-malmem-2022/MalMem2022.csv
+ang3loliveira/malware-analysis-datasets-api-call-sequences/dynamic_api_call_sequence_per_malware_100_0_306.csv
+
+Sample Inputs to try-
+
+Xgboost indices
+    benign  ->        3232, 332
+    malware ->
+        spyware    -> 41220, 45000
+        trojan     -> 50000, 50200
+        ransomware -> 35374, 35375
+
+Transformer indices
+    benign  -> 15, 38, 149
+    malware -> 10, 115, 143
+
+CNN indices
+Stantinko -> 617
+Androm    -> 614
+Expiro    -> 1814, 1815, 1816
+Neshta    -> 616
+Dinwood   -> 2222, 2223, 2224
+HackKMS   -> 182, 183, 184
+Amonetize -> 0, 1, 2
+Neoreklami-> 3000, 3001, 3002
+other     -> 606, 607, 608, 613, 331

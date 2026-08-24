@@ -1,0 +1,67 @@
+REFERENCE DOCS MATCHED:
+
+[RAM state: Trojan]
+  Summary: Memory artifacts consistent with a trojan.
+  Indicators: Malware disguised as legitimate software; commonly used to open a backdoor, disable defenses, or drop further payloads.
+  Suggested response: Isolate the host, capture a full memory image, and inventory any newly dropped executables or scheduled tasks. 
+
+[File family: HackKMS]
+  Summary: Bundled activation-cracker tool.
+  Indicators: Commonly bundled with pirated Windows/Office activation cracks; frequently repackaged with additional malicious payloads.
+  Suggested response: Identify how the file arrived (download source) and check for other software installed around the same time. 
+
+[File family: Stantinko]
+  Summary: Adware/botnet family.
+  Indicators: Persistence via hidden Windows services; ad-fraud and crypto-mining side effects.
+  Suggested response: Check for unexpected background services and unusual outbound ad-network traffic. 
+
+[File family: Amonetize]
+  Summary: Adware/PUA installer.
+  Indicators: Known for bundling unwanted browser extensions and adware alongside legitimate-looking installers.
+  Suggested response: Audit installed browser extensions and recently installed programs. 
+
+[File family: Expiro]
+  Summary: File-infecting virus.
+  Indicators: Appends itself to executables on disk; can steal stored credentials/FTP data.
+  Suggested response: Scan for infected binaries across the filesystem, not just the sampled file, since it self-propagates by infection. 
+
+[File family: Androm]
+  Summary: Backdoor family (Andromeda/Gamarue).
+  Indicators: Commonly used purely as a downloader to fetch and stage second-stage payloads.
+  Suggested response: Treat as a precursor infection -- hunt for additional payloads dropped after initial compromise. 
+
+[File family: Neshta]
+  Summary: File infector.
+  Indicators: Prepends itself to Windows PE executables; spreads via infected files and removable drives.
+  Suggested response: Check removable media history and quarantine all infected executables, not just the flagged sample. 
+
+NO REFERENCE AVAILABLE FOR: ["API call 'NtFreeVirtualMemory'", "API call 'LdrGetDllHandle'", "API call 'LdrGetProcedureAddress'", "API call 'LdrGetDllHandle'", "API call 'LdrGetProcedureAddress'", "API call 'LdrGetDllHandle'", "API call 'LdrGetProcedureAddress'", "API call 'LdrGetDllHandle'", "API call 'LdrGetProcedureAddress'", "API call 'LoadResource'"] 
+
+================================================================================
+SOC ANALYST REPORT
+================================================================================
+
+**VERDICT**
+Malicious. Final probability: 0.9995.
+
+**FINDINGS BY DETECTOR**
+
+* **XGBoost**: The system predicted a Trojan state with 82.2% confidence, indicating that the malware is disguised as legitimate software and may be used to open a backdoor, disable defenses, or drop further payloads. The system identified three indicators: handles.nsemaphore, handles.nfile, and handles.nmutant.
+* **Transformer**: The system predicted a Malware state with 98% confidence, indicating that the sequence of Windows API/syscalls suggests malicious behavior. The system identified 10 indicators: NtFreeVirtualMemory, LdrGetDllHandle, LdrGetProcedureAddress, LdrGetDllHandle, LdrGetProcedureAddress, LdrGetDllHandle, LdrGetProcedureAddress, LdrGetDllHandle, LdrGetProcedureAddress, and LoadResource.
+* **CNN**: The system identified 9 files as belonging to the HackKMS, Stantinko, Amonetize, Expiro, Androm, and Neshta families, with confidence levels ranging from 0.815 to 0.973.
+
+**ATTACK CONTEXT**
+
+The system detected a Trojan, which is consistent with a memory artifact. The Trojan is disguised as legitimate software and may be used to open a backdoor, disable defenses, or drop further payloads. The Transformer detected a sequence of Windows API/syscalls that suggests malicious behavior. The CNN identified several file families, including HackKMS, Stantinko, Amonetize, Expiro, Androm, and Neshta, which are known to be malicious. However, no reference is available for the API calls LdrGetDllHandle, LdrGetProcedureAddress, and LoadResource.
+
+**CONFIDENCE & DISAGREEMENT**
+
+The disagreement score is 0.0619, indicating moderate agreement among the detectors. The XGBoost and Transformer detectors are in agreement, while the CNN detector is slightly less confident.
+
+**RECOMMENDED NEXT STEPS**
+
+1. Isolate the host and capture a full memory image to inventory any newly dropped executables or scheduled tasks.
+2. Identify how the flagged file (handles.nsemaphore) arrived (download source) and check for other software installed around the same time.
+3. Check for unexpected background services and unusual outbound ad-network traffic to detect potential adware or botnet activity.
+4. Scan for infected binaries across the filesystem, not just the sampled file, since the Expiro virus self-propagates by infection.
+5. Treat the Androm backdoor as a precursor infection and hunt for additional payloads dropped after initial compromise.
