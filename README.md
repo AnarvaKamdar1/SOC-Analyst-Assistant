@@ -1,36 +1,39 @@
-<h1 align="center">SOC Analyst Assistant</h1>
+# SOC Analyst Assistant
 
 ## Overview
 
 SOC Analyst Assistant is a multi-model malware analysis pipeline that combines three independent detectors with security-reference grounding and LLM-based SOC report generation.
 
-The system analyzes different representations of potentially malicious activity:
+The system treats different malware representations as **independent evidence channels**:
 
-* **XGBoost** analyzes memory/process features from the CIC-MalMem-2022 dataset and classifies them into Benign, Ransomware, Spyware, or Trojan.
-* **Transformer** analyzes sequences of Windows API calls and classifies them as Goodware/Benign or Malware.
-* **CNN** analyzes MaleVis image representations and predicts malware families.
+- **Memory/process evidence:** XGBoost analyzes memory/process features from the CIC-MalMem-2022 dataset and classifies them into Benign, Ransomware, Spyware, or Trojan.
+- **Behavioral evidence:** A Transformer analyzes Windows API-call sequences and classifies them as Goodware/Benign or Malware.
+- **File evidence:** A CNN analyzes MaleVis image representations and predicts malware families from suspicious file samples.
 
-The outputs from these detectors are combined into a final maliciousness probability. The resulting structured summary is then enriched with references from MITRE ATT&CK and local security documentation before being passed to a Llama 3.2 3B Instruct model for generation of a SOC-style incident report.
+These detectors are trained independently because there is no single unified dataset providing all three representations for the same malicious activity. The system instead models them as complementary, sensor-like evidence sources that can provide different views of a security investigation.
+
+The calibrated detector outputs are combined into a final maliciousness probability. The resulting structured evidence is then enriched with MITRE ATT&CK and local security-document references before being passed to a Llama 3.2 3B Instruct model to generate a SOC-style incident report.
 
 The main execution flow is implemented in `main.ipynb`, while reusable inference, fusion, security-reference, prompt-generation, and summary-building logic is separated into the `utilities` directory.
 
 ## Key Features
 
-| Feature                          | Implementation                                                                                                                                                                    |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Multi-model malware detection    | Combines XGBoost, Transformer, and CNN detectors operating on different malware representations.                                                                                  |
-| Memory/process classification    | XGBoost model processes CIC-MalMem-2022 features and produces multiclass malware-state predictions.                                                                               |
-| API-call sequence analysis       | Transformer model processes Windows API/syscall sequences and predicts Goodware/Benign or Malware.                                                                                |
-| Malware-family classification    | CNN model processes MaleVis image samples and predicts among the available malware-family classes.                                                                                |
-| Probability calibration          | Detector inference applies stored calibration artifacts, including Platt scaling, before downstream fusion.                                                                       |
-| XGBoost evidence extraction      | SHAP values are used to identify top contributing features for an XGBoost prediction.                                                                                             |
-| Detector fusion                  | XGBoost and Transformer probabilities are combined using reliability-weighted fusion logic that accounts for detector disagreement.                                               |
-| CNN evidence aggregation         | CNN file-level predictions are ranked and limited using the configured malware-family hierarchy and per-class/file limits before influencing the final maliciousness probability. |
-| Structured fusion summary        | `json_summary_generator.py` converts detector and fusion outputs into a common `final_summary` structure.                                                                         |
-| MITRE ATT&CK grounding           | MITRE ATT&CK STIX data is indexed for technique and software lookups used during report generation.                                                                               |
-| Local security-document fallback | When an indicator is not resolved through MITRE ATT&CK, the system can look it up in the local `SECURITY_DOCS` data.                                                              |
-| Grounded SOC report generation   | The LLM receives the fusion result together with matched reference snippets and explicitly tracks indicators for which no reference is available.                                 |
-| Reusable inference utilities     | Detector inference is separated into importable functions rather than being tied directly to the training notebooks.                                                              |
+| Feature | Implementation |
+| --- | --- |
+| Multi-channel malware detection | Combines three independent detectors operating on memory/process, behavioral, and file representations. |
+| Memory/process analysis | XGBoost processes CIC-MalMem-2022 features and produces multiclass malware-state predictions. |
+| API-call behavior analysis | Transformer processes Windows API-call sequences and predicts Goodware/Benign or Malware. |
+| Malware-family classification | CNN processes MaleVis image samples and predicts available malware-family classes. |
+| Probability calibration | Detector outputs are calibrated using stored calibration artifacts, including Platt scaling. |
+| XGBoost evidence extraction | SHAP values identify the features contributing most strongly to an XGBoost prediction. |
+| Behavioral evidence extraction | Important API-call factors are retained from Transformer inference for downstream reporting. |
+| Evidence fusion | Calibrated XGBoost and Transformer probabilities are combined using reliability-weighted fusion and detector disagreement. |
+| CNN evidence aggregation | File-level CNN predictions are ranked, grouped by malware family, and limited before contributing to the final maliciousness estimate. |
+| Structured evidence summary | Detector outputs and fusion results are converted into a common `final_summary` structure. |
+| MITRE ATT&CK grounding | MITRE ATT&CK STIX data is indexed for technique and software lookups during report generation. |
+| Local security-document fallback | Indicators that cannot be resolved through MITRE ATT&CK can be matched against the local `SECURITY_DOCS` reference data. |
+| Grounded SOC reporting | The LLM receives structured detector evidence together with matched security references and explicitly tracks unmatched indicators. |
+| Reusable inference utilities | Model inference, fusion, reference lookup, summary generation, and prompting are separated into reusable modules. |
 
 ## Architecture
 
@@ -110,6 +113,52 @@ flowchart LR
         C5[Malware Family + Confidence]
 
         C1 --> C2 --> C3 --> C4 --> C5
+    end
+```
+
+```mermaid
+flowchart TB
+    subgraph DETECTORS["Independent Evidence Channels"]
+        direction LR
+
+        subgraph XGB["XGBoost Detector"]
+            direction TB
+            X1[CIC-MalMem-2022 Sample]
+            X2[Preprocessing Pipeline]
+            X3[Calibrated XGBoost Model]
+            X4[Label Encoder]
+            X5[Class Probability Distribution]
+            X6[SHAP Top Factors]
+
+            X1 --> X2 --> X3
+            X3 --> X5
+            X3 --> X6
+            X4 --> X5
+        end
+
+        subgraph TR["Transformer Detector"]
+            direction TB
+            T1[API Call Sequence]
+            T2[API Vocabulary / Mapping]
+            T3[APITransformerClassifier]
+            T4[Platt Scaler]
+            T5[Goodware/Benign or Malware]
+            T6[Top API-call Factors]
+
+            T1 --> T2 --> T3 --> T4 --> T5
+            T3 --> T6
+        end
+
+        subgraph CNN["CNN Detector"]
+            direction TB
+            C1[MaleVis Image]
+            C2[CNN Preprocessing Pipeline]
+            C3[MaleVisCNN]
+            C4[Platt Calibrators]
+            C5[Malware Family + Confidence]
+
+            C1 --> C2 --> C3 --> C4 --> C5
+        end
     end
 ```
 
@@ -331,42 +380,25 @@ The repository currently demonstrates the complete path from selected malware-an
 
 The main notebook uses predefined dataset paths and sample indices rather than exposing a standalone application interface. The reusable inference logic is separated into utility modules, but the overall orchestration remains notebook-based.
 
-# SOC Analyst Assistant
 
-## Overview
 
-SOC Analyst Assistant is a multi-model malware analysis pipeline that combines three independent detectors with security-reference grounding and LLM-based SOC report generation.
 
-The system treats different malware representations as **independent evidence channels**:
 
-- **Memory/process evidence:** XGBoost analyzes memory/process features from the CIC-MalMem-2022 dataset and classifies them into Benign, Ransomware, Spyware, or Trojan.
-- **Behavioral evidence:** A Transformer analyzes Windows API-call sequences and classifies them as Goodware/Benign or Malware.
-- **File evidence:** A CNN analyzes MaleVis image representations and predicts malware families from suspicious file samples.
 
-These detectors are trained independently because there is no single unified dataset providing all three representations for the same malicious activity. The system instead models them as complementary, sensor-like evidence sources that can provide different views of a security investigation.
 
-The calibrated detector outputs are combined into a final maliciousness probability. The resulting structured evidence is then enriched with MITRE ATT&CK and local security-document references before being passed to a Llama 3.2 3B Instruct model to generate a SOC-style incident report.
 
-The main execution flow is implemented in `main.ipynb`, while reusable inference, fusion, security-reference, prompt-generation, and summary-building logic is separated into the `utilities` directory.
 
-## Key Features
 
-| Feature | Implementation |
-| --- | --- |
-| Multi-channel malware detection | Combines three independent detectors operating on memory/process, behavioral, and file representations. |
-| Memory/process analysis | XGBoost processes CIC-MalMem-2022 features and produces multiclass malware-state predictions. |
-| API-call behavior analysis | Transformer processes Windows API-call sequences and predicts Goodware/Benign or Malware. |
-| Malware-family classification | CNN processes MaleVis image samples and predicts available malware-family classes. |
-| Probability calibration | Detector outputs are calibrated using stored calibration artifacts, including Platt scaling. |
-| XGBoost evidence extraction | SHAP values identify the features contributing most strongly to an XGBoost prediction. |
-| Behavioral evidence extraction | Important API-call factors are retained from Transformer inference for downstream reporting. |
-| Evidence fusion | Calibrated XGBoost and Transformer probabilities are combined using reliability-weighted fusion and detector disagreement. |
-| CNN evidence aggregation | File-level CNN predictions are ranked, grouped by malware family, and limited before contributing to the final maliciousness estimate. |
-| Structured evidence summary | Detector outputs and fusion results are converted into a common `final_summary` structure. |
-| MITRE ATT&CK grounding | MITRE ATT&CK STIX data is indexed for technique and software lookups during report generation. |
-| Local security-document fallback | Indicators that cannot be resolved through MITRE ATT&CK can be matched against the local `SECURITY_DOCS` reference data. |
-| Grounded SOC reporting | The LLM receives structured detector evidence together with matched security references and explicitly tracks unmatched indicators. |
-| Reusable inference utilities | Model inference, fusion, reference lookup, summary generation, and prompting are separated into reusable modules. |
+
+
+
+
+
+
+
+
+
+
 
 ## Architecture
 
