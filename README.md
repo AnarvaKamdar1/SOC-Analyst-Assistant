@@ -37,7 +37,12 @@ The main execution flow is implemented in `main.ipynb`, while reusable inference
 
 ## Architecture
 
-The overall pipeline consists of four major stages: detector inference, evidence fusion, security-reference lookup, and SOC report generation.
+The system is organized around four stages:
+
+1. **Independent detector inference** over different evidence channels.
+2. **Calibration and evidence fusion** to produce an overall maliciousness estimate.
+3. **Security-reference grounding** using MITRE ATT&CK and local security documentation.
+4. **LLM-based SOC report generation** using the structured evidence and retrieved references.
 
 ```mermaid
 flowchart TD
@@ -79,90 +84,6 @@ Each detector is implemented as an independent calibrated inference pipeline.
 
 ```mermaid
 flowchart LR
-    subgraph XGB["XGBoost Detector"]
-        X1[CIC-MalMem-2022 Sample]
-        X2[Preprocessing Pipeline]
-        X3[Calibrated XGBoost Model]
-        X4[Label Encoder]
-        X5[Class Probability Distribution]
-        X6[SHAP Top Factors]
-
-        X1 --> X2 --> X3
-        X3 --> X5
-        X3 --> X6
-        X4 --> X5
-    end
-
-    subgraph TR["Transformer Detector"]
-        T1[API Call Sequence]
-        T2[API Vocabulary / Mapping]
-        T3[APITransformerClassifier]
-        T4[Platt Scaler]
-        T5[Goodware/Benign or Malware]
-        T6[Top API-call Factors]
-
-        T1 --> T2 --> T3 --> T4 --> T5
-        T3 --> T6
-    end
-
-    subgraph CNN["CNN Detector"]
-        C1[MaleVis Image]
-        C2[CNN Preprocessing Pipeline]
-        C3[MaleVisCNN]
-        C4[Platt Calibrators]
-        C5[Malware Family + Confidence]
-
-        C1 --> C2 --> C3 --> C4 --> C5
-    end
-```
-
-```mermaid
-flowchart TB
-    subgraph DETECTORS["Independent Evidence Channels"]
-        direction LR
-
-        subgraph XGB["XGBoost Detector"]
-            direction TB
-            X1[CIC-MalMem-2022 Sample]
-            X2[Preprocessing Pipeline]
-            X3[Calibrated XGBoost Model]
-            X4[Label Encoder]
-            X5[Class Probability Distribution]
-            X6[SHAP Top Factors]
-
-            X1 --> X2 --> X3
-            X3 --> X5
-            X3 --> X6
-            X4 --> X5
-        end
-
-        subgraph TR["Transformer Detector"]
-            direction TB
-            T1[API Call Sequence]
-            T2[API Vocabulary / Mapping]
-            T3[APITransformerClassifier]
-            T4[Platt Scaler]
-            T5[Goodware/Benign or Malware]
-            T6[Top API-call Factors]
-
-            T1 --> T2 --> T3 --> T4 --> T5
-            T3 --> T6
-        end
-
-        subgraph CNN["CNN Detector"]
-            direction TB
-            C1[MaleVis Image]
-            C2[CNN Preprocessing Pipeline]
-            C3[MaleVisCNN]
-            C4[Platt Calibrators]
-            C5[Malware Family + Confidence]
-
-            C1 --> C2 --> C3 --> C4 --> C5
-        end
-    end
-```
-```mermaid
-flowchart LR
 
     X1["CIC-MalMem-2022 Sample"] --> X2["Preprocessing"] --> X3["Calibrated XGBoost"]
     X3 --> X4["Class Probabilities"]
@@ -180,6 +101,37 @@ flowchart LR
 ```
 
 The detector implementations reconstruct the required model architectures, load the stored weights and preprocessing artifacts, run inference, and return calibrated results for downstream processing.
+
+### Independent Evidence Channels
+
+The three detectors are intentionally independent. Each observes a different representation of potentially malicious activity.
+
+This architecture is intended to represent how a security investigation can contain heterogeneous evidence. For example, memory/process state can provide one view of an event, API-call behavior can provide another, and suspicious files can provide artifact-level evidence.
+
+The datasets are therefore **not treated as a single multimodal training dataset**. Instead, each dataset is used to train a detector specialized for its own evidence channel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Fusion and Evidence Processing
 
@@ -282,101 +234,6 @@ flowchart LR
     LLAMA --> REPORT[SOC Incident Summary]
 ```
 
-## Repository Structure
-
-```text
-SOC-Analyst-Assistant/
-├── artifacts_cnn/
-│   ├── cnn_class_weights.json
-│   ├── cnn_performance_metrics.json
-│   ├── cnn_platt_calibrators.joblib
-│   ├── cnn_preprocessing_pipeline.json
-│   └── ...
-│
-├── artifacts_transformer/
-│   ├── api_transformer_model.pth
-│   ├── transformer_calibrated_metrics.json
-│   ├── transformer_platt_scaler.joblib
-│   └── transformer_preprocessing_pipeline.json
-│
-├── artifacts_xgboost/
-│   ├── calibrated_xgboost_model.joblib
-│   ├── label_encoder.joblib
-│   ├── performance_metrics.json
-│   ├── preprocessing_pipeline.joblib
-│   └── ...
-│
-├── training/
-│   ├── train-cic-malmem2022-xgboost.ipynb
-│   ├── train-malevis-cnn.ipynb
-│   └── train-malwareapicallsequences-transformer.ipynb
-│
-├── utilities/
-│   ├── combining_logic.py
-│   ├── fixed_config.py
-│   ├── inference_functions.py
-│   ├── json_summary_generator.py
-│   ├── prompt_generation.py
-│   └── security_docs.py
-│
-├── input_information.txt
-├── main.ipynb
-├── output.txt
-└── security_documentations.zip
-```
-
-The repository separates model artifacts, training notebooks, and reusable inference/reporting utilities. The three detector training notebooks correspond to the XGBoost, Transformer, and CNN components used by the main inference notebook.
-
-## Execution Environment
-
-The current `main.ipynb` is structured around a Kaggle execution environment. It references datasets and model artifacts through `/kaggle/input/...` paths and obtains the Hugging Face token through Kaggle Secrets before loading `meta-llama/Llama-3.2-3B-Instruct`. The notebook also selects CUDA when it is available.
-
-The main notebook currently follows this sequence:
-
-```text
-Load dependencies
-       |
-       v
-Load Kaggle / model configuration
-       |
-       v
-Load datasets and trained artifacts
-       |
-       v
-Load MITRE ATT&CK + local security references
-       |
-       v
-Load Llama 3.2 3B Instruct
-       |
-       v
-Select input samples
-       |
-       +------------------+------------------+
-       |                  |                  |
-       v                  v                  v
-   XGBoost           Transformer           CNN
-       |                  |                  |
-       +------------------+------------------+
-                          |
-                          v
-                 Combining Logic
-                          |
-                          v
-                  Final Summary
-                          |
-                          v
-              Reference Retrieval
-                          |
-                          v
-                  Prompt Generation
-                          |
-                          v
-                    Llama Model
-                          |
-                          v
-                 SOC Analyst Report
-```
-
 ## Main Components
 
 | Component                   | Responsibility                                                                                                                                  |
@@ -417,80 +274,16 @@ The main notebook uses predefined dataset paths and sample indices rather than e
 
 
 
-## Architecture
 
-The system is organized around four stages:
 
-1. **Independent detector inference** over different evidence channels.
-2. **Calibration and evidence fusion** to produce an overall maliciousness estimate.
-3. **Security-reference grounding** using MITRE ATT&CK and local security documentation.
-4. **LLM-based SOC report generation** using the structured evidence and retrieved references.
 
-```mermaid
-flowchart TD
-    A[Investigation Evidence] --> M[Memory / Process Evidence]
-    A --> B[Behavioral / API Evidence]
-    A --> F[File Evidence]
 
-    M --> XGB[XGBoost]
-    B --> TR[Transformer]
-    F --> CNN[CNN]
 
-    XGB --> XC[Calibrated XGBoost Evidence]
-    TR --> TC[Calibrated Transformer Evidence]
-    CNN --> CC[Calibrated CNN Evidence]
 
-    XC --> FU[Evidence Fusion]
-    TC --> FU
-    CC --> FU
 
-    FU --> S[Structured Final Summary]
 
-    S --> R[Security Reference Lookup]
-    R --> MITRE[MITRE ATT&CK]
-    R --> LOCAL[Local SECURITY_DOCS]
 
-    MITRE --> C[Reference Context]
-    LOCAL --> C
 
-    S --> P[Grounded Prompt]
-    C --> P
-
-    P --> L[Llama 3.2 3B Instruct]
-    L --> O[SOC Incident Report]
-```
-
-### Independent Evidence Channels
-
-The three detectors are intentionally independent. Each observes a different representation of potentially malicious activity.
-
-```mermaid
-flowchart LR
-    subgraph MEMORY["Memory / Process Evidence"]
-        M1[CIC-MalMem-2022 Features]
-        M2[XGBoost]
-        M3[Malware State + SHAP Factors]
-        M1 --> M2 --> M3
-    end
-
-    subgraph BEHAVIOR["Behavioral Evidence"]
-        B1[Windows API-call Sequence]
-        B2[Transformer]
-        B3[Malware / Goodware + API Factors]
-        B1 --> B2 --> B3
-    end
-
-    subgraph FILES["File Evidence"]
-        F1[MaleVis Image]
-        F2[CNN]
-        F3[Malware Family + Confidence]
-        F1 --> F2 --> F3
-    end
-```
-
-This architecture is intended to represent how a security investigation can contain heterogeneous evidence. For example, memory/process state can provide one view of an event, API-call behavior can provide another, and suspicious files can provide artifact-level evidence.
-
-The datasets are therefore **not treated as a single multimodal training dataset**. Instead, each dataset is used to train a detector specialized for its own evidence channel.
 
 ## Detector Layer
 
