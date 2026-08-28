@@ -161,6 +161,23 @@ flowchart TB
         end
     end
 ```
+```mermaid
+flowchart LR
+
+    X1["CIC-MalMem-2022 Sample"] --> X2["Preprocessing"] --> X3["Calibrated XGBoost"]
+    X3 --> X4["Class Probabilities"]
+    X3 --> X5["SHAP Top Factors"]
+
+    T1["API Call Sequence"] --> T2["API Vocabulary / Mapping"] --> T3["APITransformerClassifier"]
+    T3 --> T4["Platt Scaler"] --> T5["Goodware / Malware"]
+    T3 --> T6["Top API-call Factors"]
+
+    C1["MaleVis Image"] --> C2["CNN Preprocessing"] --> C3["MaleVisCNN"]
+    C3 --> C4["Platt Calibrators"] --> C5["Malware Family + Confidence"]
+
+    X3 ~~~ T3
+    T3 ~~~ C3
+```
 
 The detector implementations reconstruct the required model architectures, load the stored weights and preprocessing artifacts, run inference, and return calibrated results for downstream processing.
 
