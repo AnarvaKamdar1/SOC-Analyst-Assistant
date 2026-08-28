@@ -110,7 +110,60 @@ This architecture is intended to represent how a security investigation can cont
 
 The datasets are therefore **not treated as a single multimodal training dataset**. Instead, each dataset is used to train a detector specialized for its own evidence channel.
 
+## Security Reference Grounding
 
+---
+
+The fusion result provides a structured security assessment, but the SOC report also needs contextual information about the detected indicators.
+
+The project therefore uses two security-reference sources:
+
+### MITRE ATT&CK
+
+MITRE ATT&CK STIX data is loaded and indexed for efficient lookups.
+
+The system maintains indexes for relevant ATT&CK entities such as:
+
+- Techniques
+- Software
+- Groups
+
+When detector evidence produces an indicator that can be mapped to an ATT&CK entry, the corresponding technique or software information is retrieved and added to the report context.
+
+The indexing step avoids repeatedly scanning the complete STIX bundle for every indicator.
+
+### Local Security Documentation
+
+MITRE ATT&CK does not necessarily contain a suitable reference for every indicator produced by the detectors.
+
+When an indicator cannot be resolved through the MITRE indexes, the system falls back to the local `SECURITY_DOCS` reference data.
+
+```mermaid
+flowchart TD
+    S[Structured Detector Summary] --> I[Extract Indicators]
+
+    I --> K1[Memory / Process Indicators]
+    I --> K2[API-call Indicators]
+    I --> K3[CNN Malware Families]
+
+    K1 --> M[MITRE ATT&CK Lookup]
+    K2 --> M
+    K3 --> M
+
+    M --> Q{Reference Found?}
+
+    Q -->|Yes| A[MITRE Reference]
+    Q -->|No| L[Local SECURITY_DOCS Lookup]
+
+    L --> B[Local Security Reference]
+    L --> N[Unmatched Indicator]
+
+    A --> C[Reference Context]
+    B --> C
+    N --> C
+```
+
+The system also preserves indicators for which no suitable reference is found. This prevents the reporting stage from silently presenting an unsupported external attribution as established fact.
 
 
 
@@ -171,38 +224,7 @@ flowchart TD
     C --> SUM
 ```
 
-## Security Reference Grounding
 
-The report-generation stage uses `security_docs.py` to load and index two reference sources:
-
-1. MITRE ATT&CK STIX data.
-2. A local `SECURITY_DOCS` reference file.
-
-The MITRE data is indexed by techniques, software, and groups so that indicators can be looked up without scanning the complete STIX bundle for every report. If an exact MITRE lookup is unavailable, the system checks the corresponding local security-document category.
-
-```mermaid
-flowchart TD
-    S[Final Summary] --> L[Indicator Extraction]
-
-    L --> K1{RAM State / API Call}
-    L --> K2{CNN Malware Family}
-
-    K1 --> M1[MITRE Technique Index]
-    K2 --> M2[MITRE Software Index]
-
-    M1 --> CHECK{Reference Found?}
-    M2 --> CHECK
-
-    CHECK -->|Yes| MITRE_CTX[MITRE ATT&CK Reference]
-    CHECK -->|No| LOCAL[Local SECURITY_DOCS Lookup]
-
-    LOCAL --> LOCAL_CTX[Local Reference]
-    LOCAL --> NONE[Unmatched Indicator]
-
-    MITRE_CTX --> CONTEXT[Reference Context]
-    LOCAL_CTX --> CONTEXT
-    NONE --> CONTEXT
-```
 
 ## SOC Report Generation
 
@@ -360,58 +382,7 @@ The final summary retains:
 - important Transformer API-call factors;
 - selected CNN file predictions and malware families.
 
-## Security Reference Grounding
 
-The fusion result provides a structured security assessment, but the SOC report also needs contextual information about the detected indicators.
-
-The project therefore uses two security-reference sources:
-
-### MITRE ATT&CK
-
-MITRE ATT&CK STIX data is loaded and indexed for efficient lookups.
-
-The system maintains indexes for relevant ATT&CK entities such as:
-
-- Techniques
-- Software
-- Groups
-
-When detector evidence produces an indicator that can be mapped to an ATT&CK entry, the corresponding technique or software information is retrieved and added to the report context.
-
-The indexing step avoids repeatedly scanning the complete STIX bundle for every indicator.
-
-### Local Security Documentation
-
-MITRE ATT&CK does not necessarily contain a suitable reference for every indicator produced by the detectors.
-
-When an indicator cannot be resolved through the MITRE indexes, the system falls back to the local `SECURITY_DOCS` reference data.
-
-```mermaid
-flowchart TD
-    S[Structured Detector Summary] --> I[Extract Indicators]
-
-    I --> K1[Memory / Process Indicators]
-    I --> K2[API-call Indicators]
-    I --> K3[CNN Malware Families]
-
-    K1 --> M[MITRE ATT&CK Lookup]
-    K2 --> M
-    K3 --> M
-
-    M --> Q{Reference Found?}
-
-    Q -->|Yes| A[MITRE Reference]
-    Q -->|No| L[Local SECURITY_DOCS Lookup]
-
-    L --> B[Local Security Reference]
-    L --> N[Unmatched Indicator]
-
-    A --> C[Reference Context]
-    B --> C
-    N --> C
-```
-
-The system also preserves indicators for which no suitable reference is found. This prevents the reporting stage from silently presenting an unsupported external attribution as established fact.
 
 ## Design Decisions
 
